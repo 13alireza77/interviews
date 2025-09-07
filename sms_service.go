@@ -202,7 +202,7 @@ func (s *RobustSMSService) SendSMSWithRetry(ctx context.Context, req SMSRequest)
 			}
 		}
 
-		attemptCtx, cancel := context.WithTimeout(ctx, 5*time.Second)
+		attemptCtx, cancel := context.WithTimeout(ctx, delay)
 
 		response, err := s.primaryProvider.SendSMS(attemptCtx, req)
 		cancel()
@@ -243,7 +243,7 @@ func (s *RobustSMSService) SendSMS(ctx context.Context, req SMSRequest) (SMSResp
 	log.Printf("Primary SMS provider failed: %v", err)
 
 	log.Println("Attempting fallback SMS provider...")
-	fallbackCtx, cancel := context.WithTimeout(ctx, 2*time.Second)
+	fallbackCtx, cancel := context.WithTimeout(ctx, s.retryConfig.InitialDelay)
 	defer cancel()
 
 	fallbackResponse, fallbackErr := s.fallbackProvider.SendSMS(fallbackCtx, req)
